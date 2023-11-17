@@ -28,7 +28,7 @@ for xval in range(0, 32, 1):
         print(f"Error: {e}")
 
 xval = 0
-for yval in range(32, -1, -1):
+for yval in range(31, -1, -1):
     try:
         headers = {'Content-Type': 'application/json'}
         print({'colour': colour,

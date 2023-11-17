@@ -10,8 +10,8 @@ colour = (randint(0, 255), randint(0, 255), randint(0, 255))
 headers = {'Content-Type': 'application/json'}
 
 response = requests.put(url + endpoint, json={'m': 1,
-                                               'b': 10,
-                                               'length': 7,
+                                               'b': 1,
+                                               'length': 15,
                                                'x_pos': 1,
                                                'colour': colour,
                                                'y_pos': 3}, headers=headers)

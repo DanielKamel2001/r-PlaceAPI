@@ -2,7 +2,7 @@ import base64
 import threading
 
 import pygame
-from flask import Flask, send_file, request, jsonify, Response, json
+from flask import Flask, send_file, request, Response
 
 app = Flask(__name__)
 # Initialize screen size, square split into block
@@ -11,10 +11,6 @@ display_height = display_width
 board_size = 32
 block_length = display_height / board_size  # 25  # 32 blocks of length 25 pixels
 background_image_filename = 'background.jpg'
-
-
-# TODO: create data struct to track when the last time an ip submitted a place request, Block requests made too close to one another
-# users = [['ip', 'time_since_last_placement'], ['ip', 'time_since_last_placement']]
 
 
 @app.route('/')
@@ -29,13 +25,13 @@ def hello_world():  # put application's code here
             '\n - PUT Request that requires:'
             '\n   "x_pos" & "y_pos" where they represent x and y coordinates where (0,0) is the left-top, and (31,31) is the right-bottom'
             '\n   "colour" a tuple of 3 integers bellow 255 that represents an RGB colour'
-            
+
             '\nPlaceImage'
             '\n - places an image on the screen at the given location resized to fit the allotted space:'
             '\n - POST Request that requires:'
             '\n   "x_pos" & "y_pos" where they represent x and y coordinates where (0,0) is the left-top, and (31,31) is the right-bottom'
             '\n   "imageBase64String" which represents a "jpg" image encoded in base64'
-            
+
             '\nDeletePixel'
             '\n - Deletes the pixel or image on the board at the given location revealing the background image:'
             '\n - DELETE Request that requires:'
@@ -73,16 +69,21 @@ def draw_line():
 
             print((x + i), (y + (x * m) + b))
 
-
             if ((x + i) >= 32 or (y + (x * m) + b) >= 32):
                 break
 
             board[y + (x * m) + b][x] = colour
-            x=x+1
+            x = x + 1
 
-        return jsonify({'message': 'pixel successfully deleted'})
+        return Response(
+            "line has been drawn",
+            status=200,
+        )
     else:
-        raise Exception("not a valid colour")
+        return Response("included colour is not a valid RGB",
+                        status=400,
+
+                        )
 
 
 # Novel Feature 4
@@ -94,7 +95,10 @@ def delete_pixel():
     # Set nothing to display on the selected location
     board[json_data['y_pos']][json_data['x_pos']] = None
 
-    return jsonify({'message': 'pixel successfully deleted'})
+    return Response(
+        "Pixel has been deleted",
+        status=200,
+    )
 
 
 # Novel Feature 3
@@ -116,15 +120,15 @@ def image_place():
     board[json_data['y_pos']][json_data['x_pos']] = img
 
     return Response(
+        "Image has been placed",
+        status=200,
+    )
 
-            status=200,
-            mimetype="application/json")
 
 # Novel Feature 2 Allows users to place a pixel on the board.
 # requires a json request with the colour, x_pos, y_pos values, (array->tuple of RGB values, integer, integer)
 @app.route('/PlacePixel', methods=['GET', 'PUT'])
 def place_pixel():
-
     request_params = request.get_json()
     # print(request_params)
     # colour = myCustomColours.stringToColour(request_params['colour'])
@@ -134,7 +138,10 @@ def place_pixel():
             colour[2] <= 255)):
         board[request_params['y_pos']][request_params['x_pos']] = colour
     else:
-        raise Exception("Received Colour invalid")
+        return Response("included colour is not a valid RGB",
+                        status=400,
+
+                        )
     return Response(
         status=200,
         mimetype="application/json"
@@ -143,7 +150,6 @@ def place_pixel():
 
 # Novel Feature 1
 # Return image of the current state
-# TODO: place a check so that we serve the image not while it's being written
 @app.route('/image', methods=['GET'])
 def get_place():
     response = send_file('place.JPG', mimetype='image/jpg')

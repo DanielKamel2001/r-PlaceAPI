@@ -195,9 +195,11 @@ def manage_display():
         game_display.blit(background, (0, 0))
         update_display(game_display, block_length)
         pygame.display.update()
-
-        # Save the current state so it can be served later
-        pygame.image.save(game_display, 'place.JPG')
+        try:
+            # Save the current state so it can be served later
+            pygame.image.save(game_display, 'place.JPG')
+        except:
+            pass
         clock.tick(30)
 
 
